@@ -126,9 +126,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    // Edit csend[] to edit the values being sent
+    // edit/store multiple txHeaders to handle multiple IDs (different IDs for different output data structures)
 	  uint8_t csend[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
 	  HAL_CAN_AddTxMessage(&hcan,&txHeader,csend,&canMailbox);
     printf("Wrote message to CANBUS...\r\n");
+    HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
 	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
@@ -174,6 +177,7 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 /**
   * @brief  Reads CANBUS message from FIFO buffer 
+  * @author Peter Woolsey
   * @retval None
   */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
@@ -186,10 +190,35 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
   else
   {
     printf("Message read successfully...\r\n");
-    // access data through rxHeader(header info?), canRX (data?)
+
+    // Get header info...
+    if (rxHeader.IDE == CAN_ID_STD)
+    {
+      printf("Message has standard ID type...\r\n");
+      printf("Message ID:\t%#lx\r\n",rxHeader.StdId);
+    }
+    else if (rxHeader.IDE == CAN_ID_EXT)
+    {
+      printf("Message has extended ID type...\r\n");
+      printf("Message ID:\t%#lx\r\n",rxHeader.ExtId);
+    }
+    else
+    {
+      printf("ERROR: Unknown IDE type\r\n");
+      return;
+    }
+
+    // Get data... 
+    // If len(data) < 8 (less than 64 bytes) does the data fill from the front or the back of the array?
+    printf("Message length is %ld byte(s)", rxHeader.DLC);
+    for (uint8_t i = 0; i < 8; i++) {
+        printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
+    }
+
   } 
 
 }
+
 /**
   * @brief  Retargets the C library printf function to the USART.
   * @retval None
