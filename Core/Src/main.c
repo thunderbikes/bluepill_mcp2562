@@ -126,14 +126,21 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    
+    /* USER CODE BEGIN 3 */
     // Edit csend[] to edit the values being sent
     // edit/store multiple txHeaders to handle multiple IDs (different IDs for different output data structures)
 	  uint8_t csend[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
-	  HAL_CAN_AddTxMessage(&hcan,&txHeader,csend,&canMailbox);
-    printf("Wrote message to CANBUS...\r\n");
+    if (HAL_CAN_AddTxMessage(&hcan,&txHeader,csend,&canMailbox) == HAL_ERROR)
+    {
+      printf("Write to CANBUS FAILED...\r\n");
+    }
+    else
+    {
+      printf("Wrote message to CANBUS...\r\n");
+    }
     HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
 	  HAL_Delay(1000);
-    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
