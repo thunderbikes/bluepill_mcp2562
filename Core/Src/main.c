@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -155,13 +154,13 @@ int main(void)
     if(HAL_CAN_IsTxMessagePending(&hcan, &canMailbox) != 0){
       printf("Full mailbox\r\n");
     }
-    if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, canRX) == HAL_OK) {
-      printf("received message\r");
-      printf("Message length is %ld byte(s)\r\n", rxHeader.DLC);
-      for (uint8_t i = 0; i < 8; i++) {
-        printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
-    }
-    }
+    // if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, canRX) == HAL_OK) {
+    //   printf("received message\r");
+    //   printf("Message length is %ld byte(s)\r\n", rxHeader.DLC);
+    //   for (uint8_t i = 0; i < 8; i++) {
+    //     printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
+    // }
+    // }
 
     HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
 	  HAL_Delay(1000);
@@ -316,10 +315,10 @@ static void MX_GPIO_Init(void)
   */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
 {
-  printf("Recieved CANBUS message...\r\n");
+  //printf("ISR\r\n");
 	if (HAL_CAN_GetRxMessage(hcan1, CAN_RX_FIFO0, &rxHeader, canRX) != HAL_OK)
   {
-    printf("CAN Message Read Failed. HAL ERROR... \r\n");
+    //printf("CAN Message Read Failed. HAL ERROR... \r\n");
   }
   else
   {
@@ -327,26 +326,26 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
     // Get header info...
     if (rxHeader.IDE == CAN_ID_STD)
     {
-      printf("Message has standard ID type...\r\n");
-      printf("Message ID:\t%#lx\r\n",rxHeader.StdId);
+      //printf("Message has standard ID type...\r\n");
+      //printf("Message ID:\t%#lx\r\n",rxHeader.StdId);
 
     }
     else if (rxHeader.IDE == CAN_ID_EXT)
     {
-      printf("Message has extended ID type...\r\n");
-      printf("Message ID:\t%#lx\r\n",rxHeader.ExtId);
+      //printf("Message has extended ID type...\r\n");
+      //printf("Message ID:\t%#lx\r\n",rxHeader.ExtId);
     }
     else
     {
-      printf("ERROR: Unknown IDE type\r\n");
+      //printf("ERROR: Unknown IDE type\r\n");
       return;
     }
 
     // Get data... 
     // If len(data) < 8 (less than 64 bytes) does the data fill from the front or the back of the array?
-    printf("Message length is %ld byte(s)", rxHeader.DLC);
+    //printf("Message length is %ld byte(s)", rxHeader.DLC);
     for (uint8_t i = 0; i < 8; i++) {
-        printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
+        //printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
     }
 
   } 
