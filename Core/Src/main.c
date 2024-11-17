@@ -72,6 +72,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+  GPIO_PinState led_is_on = GPIO_PIN_RESET;
+  GPIO_PinState new_state = GPIO_PIN_RESET;
+  uint8_t csend[1];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -128,6 +131,30 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    new_state = HAL_GPIO_ReadPin(CNTRL_INPUT_GPIO_Port, CNTRL_INPUT_Pin);
+    if (new_state != led_is_on)
+    {
+      led_is_on = new_state;
+      if (new_state == GPIO_PIN_SET)
+      {
+        csend[0] = 0xff;
+        printf("Turning led on...\r\n");
+      }
+      else
+      {
+        csend[0] = 0x00;
+        printf("Turning led off...\r\n");
+      }
+      if (HAL_CAN_AddTxMessage(&hcan,&txHeader,csend,&canMailbox) == HAL_ERROR)
+      {
+        printf("Write to CANBUS FAILED...\r\n");
+      }
+      else
+      {
+        printf("Wrote message to CANBUS...\r\n");
+      }
+    }
+    HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
@@ -179,50 +206,6 @@ void SystemClock_Config(void)
   */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
 {
-  printf("Recieved CANBUS message...\r\n");
-	if (HAL_CAN_GetRxMessage(hcan1, CAN_RX_FIFO0, &rxHeader, canRX) != HAL_OK)
-  {
-    printf("CAN Message Read Failed. HAL ERROR... \r\n");
-  }
-  else
-  {
-    printf("Message read successfully...\r\n");
-
-    // Get header info...
-    if (rxHeader.IDE == CAN_ID_STD)
-    {
-      printf("Message has standard ID type...\r\n");
-      printf("Message ID:\t%#lx\r\n",rxHeader.StdId);
-    }
-    else if (rxHeader.IDE == CAN_ID_EXT)
-    {
-      printf("Message has extended ID type...\r\n");
-      printf("Message ID:\t%#lx\r\n",rxHeader.ExtId);
-    }
-    else
-    {
-      printf("ERROR: Unknown IDE type\r\n");
-      return;
-    }
-
-    // Get data... 
-    // If len(data) < 8 (less than 64 bytes) does the data fill from the front or the back of the array?
-    printf("Message length is %ld byte(s)", rxHeader.DLC);
-    for (uint8_t i = 0; i < 8; i++) {
-        printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
-    }
-    if (canRX[0] == 0xff)
-    {
-      HAL_GPIO_WritePin(USER_LED_GPIO_Port, USER_LED_Pin, GPIO_PIN_SET);
-      printf("Turning LED on\r\n");
-    }
-    else if (canRX[0] == 0x00)
-    {
-      HAL_GPIO_WritePin(USER_LED_GPIO_Port, USER_LED_Pin, GPIO_PIN_RESET);
-      printf("Turning LED off\r\n");
-    }
-  } 
-
 }
 
 /**
