@@ -72,6 +72,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+  uint32_t num_messages_rx_queue = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -118,7 +119,6 @@ int main(void)
   // init CAN
   HAL_CAN_ConfigFilter(&hcan,&canfil);
   HAL_CAN_Start(&hcan);
-  HAL_CAN_ActivateNotification(&hcan,CAN_IT_RX_FIFO0_MSG_PENDING);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,6 +128,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    printf("waiting...\r\n");
+    num_messages_rx_queue = HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0);
+    printf("%ld",num_messages_rx_queue);
+    HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
