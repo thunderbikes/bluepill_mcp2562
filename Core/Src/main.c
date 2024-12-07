@@ -124,7 +124,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    
     /* USER CODE BEGIN 3 */
     // Edit csend[] to edit the values being sent
     // edit/store multiple txHeaders to handle multiple IDs (different IDs for different output data structures)
@@ -138,6 +138,42 @@ int main(void)
       printf("Wrote message to CANBUS...\r\n");
     }
     HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
+    if (HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0) != 0)
+    {
+      if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO1, &rxHeader, canRX) != HAL_OK)
+      {
+        printf("CAN Message Read Failed. HAL ERROR... \r\n");
+      }
+      else
+      {
+        printf("Message read successfully...\r\n");
+
+        // Get header info...
+        if (rxHeader.IDE == CAN_ID_STD)
+        {
+          printf("Message has standard ID type...\r\n");
+          printf("Message ID:\t%#lx\r\n",rxHeader.StdId);
+        }
+        else if (rxHeader.IDE == CAN_ID_EXT)
+        {
+          printf("Message has extended ID type...\r\n");
+          printf("Message ID:\t%#lx\r\n",rxHeader.ExtId);
+        }
+        else
+        {
+          printf("ERROR: Unknown IDE type\r\n");
+          return;
+        }
+
+        // Get data... 
+        // If len(data) < 8 (less than 64 bytes) does the data fill from the front or the back of the array?
+        printf("Message length is %ld byte(s)\r\n", rxHeader.DLC);
+        for (uint8_t i = 0; i < 8; i++) {
+            printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
+        }
+
+      }
+    }
 	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
@@ -155,13 +191,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -171,12 +204,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -190,40 +223,6 @@ void SystemClock_Config(void)
   */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
 {
-  printf("Recieved CANBUS message...\r\n");
-	if (HAL_CAN_GetRxMessage(hcan1, CAN_RX_FIFO0, &rxHeader, canRX) != HAL_OK)
-  {
-    printf("CAN Message Read Failed. HAL ERROR... \r\n");
-  }
-  else
-  {
-    printf("Message read successfully...\r\n");
-
-    // Get header info...
-    if (rxHeader.IDE == CAN_ID_STD)
-    {
-      printf("Message has standard ID type...\r\n");
-      printf("Message ID:\t%#lx\r\n",rxHeader.StdId);
-    }
-    else if (rxHeader.IDE == CAN_ID_EXT)
-    {
-      printf("Message has extended ID type...\r\n");
-      printf("Message ID:\t%#lx\r\n",rxHeader.ExtId);
-    }
-    else
-    {
-      printf("ERROR: Unknown IDE type\r\n");
-      return;
-    }
-
-    // Get data... 
-    // If len(data) < 8 (less than 64 bytes) does the data fill from the front or the back of the array?
-    printf("Message length is %ld byte(s)\r\n", rxHeader.DLC);
-    for (uint8_t i = 0; i < 8; i++) {
-        printf("Byte %d: 0x%02X\r\n", i, canRX[i]);
-    }
-
-  } 
 
 }
 
