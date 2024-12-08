@@ -109,7 +109,7 @@ int main(void)
   txHeader.DLC = 8; // Number of bytes to be transmitted max- 8
   txHeader.IDE = CAN_ID_STD;
   txHeader.RTR = CAN_RTR_DATA;
-  txHeader.StdId = 0x030;
+  txHeader.StdId = 0x050;
   txHeader.ExtId = 0x02;
   txHeader.TransmitGlobalTime = DISABLE;
   
@@ -132,6 +132,8 @@ int main(void)
     if (HAL_CAN_AddTxMessage(&hcan,&txHeader,csend,&canMailbox) == HAL_ERROR)
     {
       printf("Write to CANBUS FAILED...\r\n");
+      printf("Error Code: %d\n", hcan.ErrorCode);
+      
     }
     else
     {
@@ -140,7 +142,7 @@ int main(void)
     HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
     if (HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0) != 0)
     {
-      if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO1, &rxHeader, canRX) != HAL_OK)
+      if (HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rxHeader, canRX) != HAL_OK)
       {
         printf("CAN Message Read Failed. HAL ERROR... \r\n");
       }
